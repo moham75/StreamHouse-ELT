@@ -1,0 +1,53 @@
+file,column,type,description
+customers.csv,customer_id,int,PK
+customers.csv,country,string,ISO country code
+customers.csv,city,string,City
+customers.csv,signup_ts,timestamp,Signup time
+customers.csv,is_business,int(0/1),Business customer flag
+customers.csv,loyalty_tier,string,none/silver/gold/platinum
+merchants.csv,merchant_id,int,PK
+merchants.csv,country,string,ISO country code
+merchants.csv,city,string,City
+merchants.csv,category,string,Merchant vertical
+merchants.csv,onboard_ts,timestamp,Onboarding time
+merchants.csv,risk_band,string,low/medium/high
+products.csv,product_id,int,PK
+products.csv,category,string,Product category
+products.csv,brand,string,Brand
+products.csv,base_price,"decimal(10,2)",List price
+products.csv,weight_kg,decimal,Shipping weight
+orders.csv,order_id,int,PK
+orders.csv,customer_id,int,FK -> customers.customer_id
+orders.csv,merchant_id,int,FK -> merchants.merchant_id
+orders.csv,order_ts,timestamp,Order created time
+orders.csv,status,string,Order lifecycle status
+orders.csv,channel,string,web/android/ios/pos
+orders.csv,country,string,Derived from customer
+orders.csv,currency,string,Derived from country
+orders.csv,shipping_fee,"decimal(10,2)",Shipping fee
+orders.csv,discount_rate,decimal,Order-level discount rate
+order_items.csv,order_item_id,int,PK
+order_items.csv,order_id,int,FK -> orders.order_id
+order_items.csv,product_id,int,FK -> products.product_id
+order_items.csv,quantity,int,Units
+order_items.csv,unit_price,"decimal(10,2)",Price per unit
+order_items.csv,is_promo,int(0/1),Promo flag
+payments.csv,payment_id,int,PK
+payments.csv,order_id,int,FK -> orders.order_id
+payments.csv,payment_ts,timestamp,Payment attempt time
+payments.csv,method,string,Payment method
+payments.csv,status,string,authorized/captured/failed/refunded
+payments.csv,amount,"decimal(10,2)",Amount
+refunds.csv,refund_id,int,PK
+refunds.csv,order_id,int,FK -> orders.order_id
+refunds.csv,refund_ts,timestamp,Refund time
+refunds.csv,reason,string,Refund reason
+refunds.csv,amount,"decimal(10,2)",Refund amount
+events.csv,event_id,int,PK
+events.csv,customer_id,int,FK -> customers.customer_id
+events.csv,event_ts,timestamp,Event time
+events.csv,channel,string,web/android/ios/pos
+events.csv,event_type,string,Event type
+events.csv,product_id,int,0 if none else FK -> products.product_id
+events.csv,device_os,string,Device OS
+events.csv,search_query,string,Only filled when event_type=search
