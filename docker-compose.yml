@@ -37,6 +37,22 @@ services:
     ports:
       - "9000:9000"
       - "8123:8123"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./clickhouse-init:/docker-entrypoint-initdb.d
+
+
+  # tabix:
+  #   image: spoonest/clickhouse-tabix-web-client
+  #   container_name: tabix
+  #   ports:
+  #     - "8080:80"
+  #   environment:
+  #     CH_NAME: "local-clickhouse"
+  #     CH_HOST: "clickhouse:8123"
+  #     CH_LOGIN: "clickhouse"
+  #     CH_PASSWORD: "clickhouse"
+
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1
@@ -118,3 +134,4 @@ services:
 
 volumes:
   postgres_data:
+  clickhouse_data:
