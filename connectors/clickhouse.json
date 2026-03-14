@@ -1,18 +1,21 @@
 {
-  "name": "clickhouse-customers-connector",
+  "name": "clickhouse-sink-connector",
   "config": {
     "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
     "tasks.max": "1",
     "hostname": "clickhouse",
     "port": "8123",
     "ssl": "false",
-    "database": "default",
-    "username": "default",
-    "password": "your_clickhouse_password",
-    "topics": "postgres_server.public.customers",
-    "topic2TableMap": "postgres_server.public.customers=customers",
+    "database": "clickhouse",
+    "username": "clickhouse",
+    "password": "clickhouse",
+
+    "topics": "cdc.raw.public.orders,cdc.raw.public.order_items,cdc.raw.public.payments,cdc.raw.public.products,cdc.raw.public.merchants,cdc.raw.public.customers,cdc.raw.public.events,cdc.raw.public.customers",
+    "topic2TableMap": "cdc.raw.public.orders=orders,cdc.raw.public.order_items=order_items,cdc.raw.public.payments=payments,cdc.raw.public.refunds=refunds,cdc.raw.public.merchants=merchants,cdc.raw.public.customers=customers,cdc.raw.public.products=products,cdc.raw.public.events=events",
+
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
+
     "exactlyOnce": "false",
     "errors.retry.timeout": "60"
   }

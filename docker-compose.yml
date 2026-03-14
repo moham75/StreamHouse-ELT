@@ -37,17 +37,35 @@ services:
     ports:
       - "9000:9000"
       - "8123:8123"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./clickhouse-init:/docker-entrypoint-initdb.d
 
-  tabix:
-    image: spoonest/clickhouse-tabix-web-client
-    container_name: tabix
+  dbt:
+    build:
+      context: .
+      dockerfile: dockerfile.dbt
+    container_name: dbt
+    depends_on:
+      - clickhouse
     ports:
-      - "8080:80"
-    environment:
-      CH_NAME: "local-clickhouse"
-      CH_HOST: "clickhouse:8123"
-      CH_LOGIN: "clickhouse"
-      CH_PASSWORD: "clickhouse"
+      - "7070:7070"
+    volumes:
+      - ./dbt:/usr/app
+      - ./dbt/profiles:/root/.dbt
+    working_dir: /usr/app
+
+
+  # tabix:
+  #   image: spoonest/clickhouse-tabix-web-client
+  #   container_name: tabix
+  #   ports:
+  #     - "8080:80"
+  #   environment:
+  #     CH_NAME: "local-clickhouse"
+  #     CH_HOST: "clickhouse:8123"
+  #     CH_LOGIN: "clickhouse"
+  #     CH_PASSWORD: "clickhouse"
 
 
   kafka:
@@ -130,3 +148,4 @@ services:
 
 volumes:
   postgres_data:
+  clickhouse_data:

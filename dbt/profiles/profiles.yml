@@ -1,0 +1,12 @@
+streamhouse_elt:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      host: clickhouse
+      port: 8123
+      user: clickhouse
+      password: clickhouse
+      database: clickhouse
+      schema: clickhouse
+      secure: false

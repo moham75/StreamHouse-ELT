@@ -1,5 +1,5 @@
 {
-  "name": "postgres-customers-connector",
+  "name": "postgres-source-connector",
   "config": {
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
     "database.hostname": "warehouse",
@@ -7,12 +7,16 @@
     "database.user": "debezium",
     "database.password": "debezium",
     "database.dbname": "postgres",
-    "database.server.name": "postgres_server",
-    "topic.prefix": "postgres_server",
+    "topic.prefix": "cdc.raw",
     "publication.name": "dbz_publication",
     "plugin.name": "pgoutput",
-    "table.include.list": "public.customers",
+    "table.include.list": "public.orders,public.order_items,public.payments,public.merchants,public.products,public.refunds,public.events,public.customers",
     "slot.name": "debezium_slot",
-    "snapshot.mode": "initial"
+    "snapshot.mode": "initial",
+    "decimal.handling.mode": "string",
+    "transforms": "unwrap",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
+    "time.precision.mode": "connect"
   }
 }
