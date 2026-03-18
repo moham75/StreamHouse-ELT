@@ -10,9 +10,8 @@
     "username": "clickhouse",
     "password": "clickhouse",
 
-    "topics": "cdc.raw.public.orders,cdc.raw.public.order_items,cdc.raw.public.payments,cdc.raw.public.products,cdc.raw.public.merchants,cdc.raw.public.customers,cdc.raw.public.events,cdc.raw.public.customers",
-    "topic2TableMap": "cdc.raw.public.orders=orders,cdc.raw.public.order_items=order_items,cdc.raw.public.payments=payments,cdc.raw.public.refunds=refunds,cdc.raw.public.merchants=merchants,cdc.raw.public.customers=customers,cdc.raw.public.products=products,cdc.raw.public.events=events",
-
+    "topics": "cdc.raw.orders,cdc.raw.order_items,cdc.raw.payments,raw.customers,raw.merchants,raw.products,raw.refunds",
+    "topic2TableMap": "cdc.raw.orders=orders,cdc.raw.order_items=order_items,cdc.raw.payments=payments,raw.customers=customers,raw.merchants=merchants,raw.products=products,raw.refunds=refunds",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
 

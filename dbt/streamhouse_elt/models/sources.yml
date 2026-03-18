@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: clickhouse_raw
+    database: clickhouse
+    schema: clickhouse
+    tables:
+      - name: customers
+      - name: merchants
+      - name: products
+      - name: orders
+      - name: order_items
+      - name: payments
+      - name: refunds
+      - name: events

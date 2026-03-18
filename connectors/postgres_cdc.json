@@ -1,0 +1,33 @@
+{
+  "name": "postgres-cdc-source-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "warehouse",
+    "database.port": "5432",
+    "database.user": "debezium",
+    "database.password": "debezium",
+    "database.dbname": "postgres",
+    "topic.prefix": "cdc.raw",
+    "publication.name": "dbz_publication",
+    "plugin.name": "pgoutput",
+    "table.include.list": "public.orders,public.order_items,public.payments",
+    "slot.name": "debezium_slot",
+    "snapshot.mode": "initial",
+    "decimal.handling.mode": "string",
+    "time.precision.mode": "connect",
+    "message.key.columns": "public.orders:order_id;public.payments:payment_id",
+
+    "transforms": "route,unwrap,renameFields",
+
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "cdc\\.raw\\.public\\.(.*)",
+    "transforms.route.replacement": "cdc.raw.$1",
+
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.add.fields": "op,source.ts_ms",
+    "transforms.unwrap.delete.tombstone.handling.mode": "rewrite",
+
+    "transforms.renameFields.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.renameFields.renames": "__source_ts_ms:cdc_updated_ts,__op:cdc_op"
+  }
+}
