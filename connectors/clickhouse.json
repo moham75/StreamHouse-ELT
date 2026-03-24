@@ -9,12 +9,12 @@
     "database": "clickhouse",
     "username": "clickhouse",
     "password": "clickhouse",
-    "topics": "postgres_server.public.customers,postgres_server.public.merchants,postgres_server.public.products,postgres_server.public.orders,postgres_server.public.order_items,postgres_server.public.payments,postgres_server.public.refunds,postgres_server.public.events",
-    "topic2TableMap": "postgres_server.public.customers=customers,postgres_server.public.merchants=merchants,postgres_server.public.products=products,postgres_server.public.orders=orders,postgres_server.public.order_items=order_items,postgres_server.public.payments=payments,postgres_server.public.refunds=refunds,postgres_server.public.events=events",
+
+    "topics": "cdc.raw.orders,cdc.raw.order_items,cdc.raw.payments,raw.customers,raw.merchants,raw.products,raw.refunds,raw.events",
+    "topic2TableMap": "cdc.raw.orders=orders,cdc.raw.order_items=order_items,cdc.raw.payments=payments,raw.customers=customers,raw.merchants=merchants,raw.products=products,raw.refunds=refunds,raw.events=events",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
-    "transforms": "unwrap",
-    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+
     "exactlyOnce": "false",
     "errors.retry.timeout": "60"
   }

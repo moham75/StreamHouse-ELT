@@ -22,7 +22,7 @@ services:
 
   etl:
     build:
-      context: .
+      context: ./exporter
       dockerfile: dockerfile.exporter
     depends_on:
       - warehouse
@@ -40,6 +40,20 @@ services:
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       - ./clickhouse-init:/docker-entrypoint-initdb.d
+
+  dbt:
+    build:
+      context: .
+      dockerfile: dockerfile.dbt
+    container_name: dbt
+    depends_on:
+      - clickhouse
+    ports:
+      - "7070:7070"
+    volumes:
+      - ./dbt:/usr/app
+      - ./dbt/profiles:/root/.dbt
+    working_dir: /usr/app
 
 
   # tabix:
@@ -81,6 +95,8 @@ services:
       - kafka
     ports:
       - "8083:8083"
+    volumes:
+      - ./plugins:/opt/connect-plugins
     environment:
       CONNECT_BOOTSTRAP_SERVERS: "kafka:29092"
       CONNECT_REST_PORT: "8083"
@@ -98,7 +114,8 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/opt/connect-plugins"
+
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
@@ -123,8 +140,17 @@ services:
   airflow:
     image: apache/airflow:2.9.3-python3.11
     container_name: airflow
+    command: standalone
     ports:
-      - "8080:8080"
+      - "8088:8080"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
 
   grafana:
     image: grafana/grafana:latest

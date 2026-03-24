@@ -4,119 +4,110 @@ CREATE DATABASE IF NOT EXISTS clickhouse;
 CREATE TABLE IF NOT EXISTS clickhouse.customers
 (
     customer_id UInt64,
-    first_name String,
-    last_name String,
-    email String,
-    phone Nullable(String),
     country String,
     city String,
-    signup_ts DateTime,
+    signup_ts Int64,
     is_business UInt8,
-    loyalty_tier Nullable(String),
-    updated_at Nullable(DateTime)
+    loyalty_tier Nullable(String)
 )
 ENGINE = MergeTree
-ORDER BY customer_id;
+ORDER BY customer_id
+SETTINGS allow_nullable_key = 1;
 
 
 -- merchants
 CREATE TABLE IF NOT EXISTS clickhouse.merchants
 (
     merchant_id UInt64,
-    merchant_name String,
-    category Nullable(String),
     country String,
     city Nullable(String),
-    created_at Nullable(DateTime),
-    updated_at Nullable(DateTime)
+    category String,
+    onboard_ts Nullable(Int64),
+    risk_band Nullable(String)
 )
 ENGINE = MergeTree
-ORDER BY merchant_id;
+ORDER BY merchant_id
+SETTINGS allow_nullable_key = 1;
 
 
 -- products
 CREATE TABLE IF NOT EXISTS clickhouse.products
 (
     product_id UInt64,
-    merchant_id UInt64,
-    product_name String,
     category Nullable(String),
     brand Nullable(String),
     price Decimal(18, 2),
-    currency Nullable(String),
-    is_active UInt8,
-    created_at Nullable(DateTime),
-    updated_at Nullable(DateTime)
+    weight_kg Decimal(18, 2)
 )
 ENGINE = MergeTree
-ORDER BY (merchant_id, product_id);
+ORDER BY (product_id)
+SETTINGS allow_nullable_key = 1;
 
 
 -- orders
 CREATE TABLE IF NOT EXISTS clickhouse.orders
 (
     order_id UInt64,
-    customer_id UInt64,
-    merchant_id UInt64,
-    order_ts DateTime,
-    order_status String,
-    total_amount Decimal(18, 2),
+    customer_id Nullable(UInt64),
+    merchant_id Nullable(UInt64),
+    order_ts Int64,
+    status Nullable(String),
+    channel Nullable(String),
+    country Nullable(String),
     currency Nullable(String),
-    payment_status Nullable(String),
-    updated_at Nullable(DateTime)
+    shipping_fee Decimal(18, 2),
+    discount_rate Decimal(18, 4)
 )
 ENGINE = MergeTree
-ORDER BY (order_ts, order_id);
+PARTITION BY toYYYYMM(toDateTime(order_ts / 1000))
+ORDER BY (order_ts, order_id)
+SETTINGS allow_nullable_key = 1;
 
 
 -- order_items
 CREATE TABLE IF NOT EXISTS clickhouse.order_items
 (
     order_item_id UInt64,
-    order_id UInt64,
-    product_id UInt64,
+    order_id Nullable(UInt64),
+    product_id Nullable(UInt64),
     quantity UInt32,
     unit_price Decimal(18, 2),
-    line_amount Decimal(18, 2),
-    created_at Nullable(DateTime)
+    is_promo UInt32
 )
 ENGINE = MergeTree
-ORDER BY (order_id, order_item_id);
+ORDER BY (order_id, order_item_id)
+SETTINGS allow_nullable_key = 1;
 
 
 -- payments
 CREATE TABLE IF NOT EXISTS clickhouse.payments
 (
     payment_id UInt64,
-    order_id UInt64,
-    customer_id UInt64,
-    payment_ts DateTime,
-    payment_method Nullable(String),
-    payment_status String,
-    amount Decimal(18, 2),
-    currency Nullable(String),
-    provider Nullable(String),
-    updated_at Nullable(DateTime)
+    order_id Nullable(UInt64),
+    payment_ts Int64,
+    method Nullable(String),
+    status Nullable(String),
+    amount Decimal(18, 2)
 )
 ENGINE = MergeTree
-ORDER BY (payment_ts, payment_id);
+PARTITION BY toYYYYMM(toDateTime(payment_ts / 1000))
+ORDER BY (payment_ts, payment_id)
+SETTINGS allow_nullable_key = 1;
 
 
 -- refunds
 CREATE TABLE IF NOT EXISTS clickhouse.refunds
 (
     refund_id UInt64,
-    payment_id UInt64,
-    order_id UInt64,
-    refund_ts DateTime,
-    refund_reason Nullable(String),
-    refund_status Nullable(String),
-    amount Decimal(18, 2),
-    currency Nullable(String),
-    updated_at Nullable(DateTime)
+    order_id Nullable(UInt64),
+    refund_ts Int64,
+    reason Nullable(String),
+    amount Decimal(18, 2)
 )
 ENGINE = MergeTree
-ORDER BY (refund_ts, refund_id);
+PARTITION BY toYYYYMM(toDateTime(refund_ts / 1000))
+ORDER BY (refund_ts, refund_id)
+SETTINGS allow_nullable_key = 1;
 
 
 -- events
@@ -124,14 +115,14 @@ CREATE TABLE IF NOT EXISTS clickhouse.events
 (
     event_id UInt64,
     customer_id Nullable(UInt64),
-    session_id Nullable(String),
-    event_name String,
-    event_ts DateTime,
-    source Nullable(String),
-    device Nullable(String),
-    country Nullable(String),
-    city Nullable(String),
-    metadata String
+    event_ts Int64,
+    channel Nullable(String),
+    event_type Nullable(String),
+    product_id Nullable(UInt64),
+    device_os Nullable(String),
+    search_query Nullable(String)
 )
 ENGINE = MergeTree
-ORDER BY (event_ts, event_id);
+PARTITION BY toYYYYMM(toDateTime(event_ts / 1000))
+ORDER BY (event_ts, event_id)
+SETTINGS allow_nullable_key = 1;

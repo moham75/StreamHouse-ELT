@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 
+
 customer_url = "datasets/customers.csv"
 merchant_url = "datasets/merchants.csv"
 product_url = "datasets/products.csv"
@@ -33,11 +34,12 @@ events["event_ts"] = pd.to_datetime(events["event_ts"])
 # building the connection and uploading to data to warehouse service 
 conn = create_engine("postgresql+psycopg2://postgres:postgres@warehouse:5432/postgres")
 
-customers.to_sql("customers", conn, if_exists="replace", index=False)
-merchants.to_sql("merchants", conn, if_exists="replace", index=False)
-products.to_sql("products", conn, if_exists="replace", index=False)
-orders.to_sql("orders", conn, if_exists="replace", index=False)
-order_items.to_sql("order_items", conn, if_exists="replace", index=False)
-payments.to_sql("payments", conn, if_exists="replace", index=False)
-refunds.to_sql("refunds", conn, if_exists="replace", index=False)
-events.to_sql("events", conn, if_exists="replace", index=False)
+
+events.to_sql("events", conn, if_exists="append", index=False)
+customers.to_sql("customers", conn, if_exists="append", index=False)
+merchants.to_sql("merchants", conn, if_exists="append", index=False)
+products.to_sql("products", conn, if_exists="append", index=False)
+orders.to_sql("orders", conn, if_exists="append", index=False)
+order_items.to_sql("order_items", conn, if_exists="append", index=False)
+payments.to_sql("payments", conn, if_exists="append", index=False)
+refunds.to_sql("refunds", conn, if_exists="append", index=False)
