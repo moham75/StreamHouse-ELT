@@ -6,6 +6,7 @@ sources:
     schema: clickhouse
     tables:
       - name: customers
+<<<<<<< HEAD
         columns:
           - name: customer_id
             tests:
@@ -70,3 +71,12 @@ sources:
             tests:
               - not_null
               - unique
+=======
+      - name: merchants
+      - name: products
+      - name: orders
+      - name: order_items
+      - name: payments
+      - name: refunds
+      - name: events
+>>>>>>> cad03e8cee0ebbc88376f7760eafe6794f1cc23d
