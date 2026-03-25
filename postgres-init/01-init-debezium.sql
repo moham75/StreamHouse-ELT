@@ -19,19 +19,12 @@ CREATE TABLE public.customers (
 CREATE TABLE public.events (
     event_id BIGINT PRIMARY KEY,
     customer_id BIGINT,
-<<<<<<< HEAD
     product_id BIGINT,
     event_ts TIMESTAMP,
     channel TEXT,
     event_type TEXT,
     device_os TEXT,
     search_query TEXT
-=======
-    event_type TEXT,
-    event_ts TIMESTAMP,
-    device_type TEXT,
-    source TEXT
->>>>>>> cad03e8cee0ebbc88376f7760eafe6794f1cc23d
 );
 
 CREATE TABLE public.merchants (

@@ -11,10 +11,7 @@
 
     "schema.pattern": "public",
     "table.blacklist": "orders,order_items,payments",
-<<<<<<< HEAD
     "message.key.columns": "public.customers:customer_id;public.merchants:merchant_id;public.refunds:refund_id;public.products:product_id;public.events:event_id",
-=======
->>>>>>> cad03e8cee0ebbc88376f7760eafe6794f1cc23d
 
     "mode": "bulk",
     "poll.interval.ms": "60000",

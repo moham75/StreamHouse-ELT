@@ -12,21 +12,14 @@
     "plugin.name": "pgoutput",
     "table.include.list": "public.orders,public.order_items,public.payments",
     "slot.name": "debezium_slot",
-<<<<<<< HEAD
     "snapshot.mode": "always",
-=======
-    "snapshot.mode": "initial",
->>>>>>> cad03e8cee0ebbc88376f7760eafe6794f1cc23d
     "decimal.handling.mode": "string",
     "time.precision.mode": "connect",
     "message.key.columns": "public.orders:order_id;public.payments:payment_id",
 
-<<<<<<< HEAD
     "topic.creation.default.replication.factor": "1",
     "topic.creation.default.partitions": "4",
 
-=======
->>>>>>> cad03e8cee0ebbc88376f7760eafe6794f1cc23d
     "transforms": "route,unwrap,renameFields",
 
     "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
