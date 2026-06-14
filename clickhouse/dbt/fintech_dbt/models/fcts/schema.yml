@@ -1,0 +1,25 @@
+version: 2
+
+
+models:
+  - name: fct_events
+    columns: 
+      - name: event_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_orders
+    columns: 
+      - name: o.order_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_payments
+    columns:
+      - name: payment_id
+        tests:
+          - unique
+          - not_null
+

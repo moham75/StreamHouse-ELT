@@ -1,0 +1,25 @@
+{
+  "name": "postgres-events-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+
+    "connection.url": "jdbc:postgresql://warehouse:5432/postgres",
+    "connection.user": "debezium",
+    "connection.password": "debezium",
+
+    "topic.prefix": "raw.",
+    "schema.pattern": "public",
+    "table.whitelist": "events",
+
+    "mode": "incrementing",
+    "incrementing.column.name": "event_id",
+
+    "poll.interval.ms": "60000",
+    "numeric.mapping": "best_fit",
+
+    "transforms": "route",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "raw\\.public\\.(.*)",
+    "transforms.route.replacement": "raw.$1"
+  }
+}

@@ -1,104 +1,62 @@
 services:
   warehouse:
-    image: postgres:15-alpine
+    image: postgres:16.3
     container_name: postgres
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     command:
       - "postgres"
       - "-c"
       - "wal_level=logical"
-      - "-c"
-      - "max_replication_slots=10"
-      - "-c"
-      - "max_wal_senders=10"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
 
   etl:
-    build:
-      context: ./exporter
-      dockerfile: dockerfile.exporter
-    depends_on:
-      - warehouse
+      build:
+        context: ./exporter
+        dockerfile: dockerfile.export
+      depends_on:
+        - warehouse
 
-  clickhouse:
-    image: clickhouse/clickhouse-server:24.8
-    container_name: clickhouse
-    environment:
-      CLICKHOUSE_DB: clickhouse
-      CLICKHOUSE_USER: clickhouse
-      CLICKHOUSE_PASSWORD: clickhouse
-    ports:
-      - "9000:9000"
-      - "8123:8123"
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-      - ./clickhouse-init:/docker-entrypoint-initdb.d
-
-  dbt:
-    build:
-      context: .
-      dockerfile: dockerfile.dbt
-    container_name: dbt
-    depends_on:
-      - clickhouse
-    ports:
-      - "7070:7070"
-    volumes:
-      - ./dbt:/usr/app
-      - ./dbt/profiles:/root/.dbt
-    working_dir: /usr/app
-
-
-  # tabix:
-  #   image: spoonest/clickhouse-tabix-web-client
-  #   container_name: tabix
-  #   ports:
-  #     - "8080:80"
-  #   environment:
-  #     CH_NAME: "local-clickhouse"
-  #     CH_HOST: "clickhouse:8123"
-  #     CH_LOGIN: "clickhouse"
-  #     CH_PASSWORD: "clickhouse"
-
-
-  kafka:
+  kafka_broker:
     image: confluentinc/cp-kafka:7.6.1
     container_name: kafka_broker
-    depends_on:
-      - zookeeper
     ports:
       - "9092:9092"
       - "29092:29092"
+    depends_on:
+      - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka_broker:29092,PLAINTEXT_HOST://localhost:9092"
       KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092"
       KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
 
-  kafkaconnect:
+  kafka_connect:
     build:
-      context: .
+      context: ./kafka
       dockerfile: dockerfile.connect
     image: custom-kafka-connect:1.0
     container_name: kafka_connect
     depends_on:
-      - kafka
+      - kafka_broker
     ports:
       - "8083:8083"
+      - "7071:7071"
     volumes:
-      - ./plugins:/opt/connect-plugins
+      - ./kafka/plugins:/opt/connect-plugins
+      - ./kafka/jmx-exporter:/opt/jmx-exporter
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: "kafka:29092"
+      CONNECT_BOOTSTRAP_SERVERS: "kafka_broker:29092"
       CONNECT_REST_PORT: "8083"
       CONNECT_REST_ADVERTISED_HOST_NAME: "kafka_connect"
       CONNECT_GROUP_ID: "connect-cluster"
@@ -115,49 +73,118 @@ services:
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/opt/connect-plugins"
-
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.6.1
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=7071:/opt/jmx-exporter/kafka-connect.yml"
 
   kafkaui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka_ui
     depends_on:
-      - kafka
+      - kafka_broker
     ports:
       - "8090:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka_broker:29092
 
-  airflow:
-    image: apache/airflow:2.9.3-python3.11
-    container_name: airflow
-    command: standalone
-    ports:
-      - "8088:8080"
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: zookeeper
     environment:
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      _AIRFLOW_WWW_USER_USERNAME: admin
-      _AIRFLOW_WWW_USER_PASSWORD: admin
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+  
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: clickhouse
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    volumes:
+      - ./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  dbt:
+    build:
+      context: ./clickhouse/dbt
+      dockerfile: dockerfile.dbt
+    container_name: dbt
+    depends_on:
+      - clickhouse
+    volumes:
+      - ./clickhouse/dbt:/usr/app/dbt
+    ports:
+      - "7070:7070"
+    working_dir: /usr/app/dbt/fintech_dbt
+    environment:
+      DBT_PROFILES_DIR: /usr/app/dbt
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    command: ["tail", "-f", "/dev/null"]
+
+  prometheus:
+    image: prom/prometheus:v3.12.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - kafka_exporter
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.0.1-security-01
     container_name: grafana
     ports:
       - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  kafka_exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka_exporter
+    ports:
+      - "9308:9308"
+    command:
+      - "--kafka.server=kafka_broker:29092"
+    depends_on:
+      - kafka_broker
+    restart: unless-stopped
+
+  dagster:
+    build:
+      context: ./dagster_project
+      dockerfile: dockerfile.dagster
+    container_name: dagster
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./dagster_project:/opt/dagster/app
+      - ./clickhouse/dbt:/usr/app/dbt
+      - dagster_home:/opt/dagster/dagster_home
+    working_dir: /opt/dagster/app
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+      UV_PROJECT_ENVIRONMENT: /opt/dagster/venv
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      DBT_PROFILES_DIR: /usr/app/dbt
+    command: ["uv", "run", "dg", "dev", "-h", "0.0.0.0", "-p", "3000"]
 
 volumes:
-  postgres_data:
-  clickhouse_data:
+  kafka_data:
+  zookeeper_data:
+  zookeeper_log:
+  grafana_data:
+  dagster_home:

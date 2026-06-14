@@ -1,0 +1,7 @@
+payment_method,payment_group
+credit_card,Card
+debit_card,Card
+paypal,Digital Wallet
+apple_pay,Digital Wallet
+google_pay,Digital Wallet
+bank_transfer,Bank Transfer

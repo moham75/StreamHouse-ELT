@@ -1,0 +1,11 @@
+fintech_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      schema: clickhouse
+      host: clickhouse
+      port: 8123
+      user: admin
+      password: admin
+      secure: false

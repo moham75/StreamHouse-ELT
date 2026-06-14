@@ -32,7 +32,7 @@ events["event_ts"] = pd.to_datetime(events["event_ts"])
 
 
 # building the connection and uploading to data to warehouse service 
-conn = create_engine("postgresql+psycopg2://postgres:postgres@warehouse:5432/postgres")
+conn = create_engine("postgresql+psycopg2://admin:admin@warehouse:5432/postgres")
 
 
 events.to_sql("events", conn, if_exists="append", index=False)
