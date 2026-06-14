@@ -136,6 +136,56 @@ The project uses four main CSV source groups:
 | **03. Merchant CSVs** | `merchants.csv`, `products.csv` | Merchant and product reference data |
 | **04. Events CSVs** | `events.csv` | Customer behaviour and event activity |
 
+
+---
+
+## Exercises by Service
+
+### Python Exporter
+
+- Load all CSV source groups into PostgreSQL and verify that each target table has records.
+- Convert timestamp columns correctly before loading, such as order, payment, refund, signup, and event timestamps.
+
+### PostgreSQL
+
+- Validate raw table row counts after the exporter finishes.
+- Confirm PostgreSQL is ready for streaming by checking that logical replication is enabled.
+
+### Kafka
+
+- Create or inspect Kafka topics for the raw datasets.
+- Use Kafka UI to check topic partitions, consumer groups, assigned partitions, and consumer lag.
+
+### Kafka Connect
+
+- Register connector configuration files from the `kafka/connectors/` folder.
+- Check connector and task status from Kafka Connect or Kafka UI.
+
+### ClickHouse
+
+- Create raw ClickHouse tables for Kafka-ingested data.
+- Validate ingestion freshness by checking the latest timestamp and row counts in raw tables.
+
+### dbt
+
+- Build staging models for customers, merchants, orders, payments, refunds, products, and events.
+- Build fact models such as `fct_orders`, `fct_payments`, and `fct_events`, then run dbt tests.
+
+### Dagster
+
+- View dbt assets inside the Dagster asset catalog.
+- Check asset lineage to understand how staging models connect to fact models.
+
+### Prometheus
+
+- Confirm that the `kafka_exporter` target is up.
+- Query Kafka metrics such as topic partitions and consumer lag.
+
+### Grafana
+
+- Build a Kafka dashboard showing consumer lag and partitions by topic.
+- Build a ClickHouse or business dashboard showing row counts, daily orders, or payment activity.
+
 ---
 
 ## Final Outcome
